@@ -1,5 +1,3 @@
-# obs--obs_streaming
-
 # OBS → OBS über Internet (SRT, verschlüsselt)
 
 Lokaler Win11-PC sendet Bild+Ton an die entfernte Win11-Streaming-Maschine.
