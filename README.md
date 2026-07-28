@@ -54,8 +54,14 @@ OBS → **Einstellungen → Ausgabe** → Ausgabemodus **Erweitert** → Tab **S
 | Profil | high |
 | B-Frames | 2 |
 
-**Einstellungen → Ausgabe → Tab Audio**: Spur 1, AAC, **160 kbit/s**.
-**Einstellungen → Audio**: Abtastrate **48 kHz**, Kanäle Stereo.
+**Einstellungen → Ausgabe → Tab Audio
+
+| Feld | Wert |
+|---|---|
+| Spur | 1 |
+| AAC | 160 kbit/s |
+| Abtastrate | 48 kHz |
+| Kanäle | Stereo |
 
 **Einstellungen → Stream**:
 
