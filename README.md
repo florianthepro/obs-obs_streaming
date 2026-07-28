@@ -42,19 +42,13 @@ Einstellungen im Dialog:
 <details>
 <summary>Local</summary>
 
-Upload messen (z. B. speedtest).
-
-Bitrate = **70 %** davon.
-
----
-
 OBS → **Einstellungen → Ausgabe** → Ausgabemodus **Erweitert** → Tab **Streaming**:
 
 | Feld | Wert |
 |---|---|
 | Encoder | NVENC H.264 (bzw. QSV / x264) |
 | Ratensteuerung | **CBR** |
-| Bitrate | 70 % des Uploads |
+| Bitrate | 70 % des Uploads(online speed test) |
 | Keyframe-Intervall | **1 s** |
 | Preset | P4 / Quality |
 | Profil | high |
