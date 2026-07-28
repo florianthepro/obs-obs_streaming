@@ -45,7 +45,9 @@ Einstellungen im Dialog:
 Upload messen (z. B. speedtest).
 
 Bitrate = **70 %** davon.
+
 ---
+
 OBS → **Einstellungen → Ausgabe** → Ausgabemodus **Erweitert** → Tab **Streaming**:
 
 | Feld | Wert |
@@ -58,87 +60,18 @@ OBS → **Einstellungen → Ausgabe** → Ausgabemodus **Erweitert** → Tab **S
 | Profil | high |
 | B-Frames | 2 |
 
-*Warum CBR:* SRT-Puffer und Netzpfad werden auf eine konstante Rate ausgelegt; VBR-Spitzen erzeugen Paketverlust.
-
-## B3. Audio
-
 **Einstellungen → Ausgabe → Tab Audio**: Spur 1, AAC, **160 kbit/s**.
 **Einstellungen → Audio**: Abtastrate **48 kHz**, Kanäle Stereo.
-
-## B4. Ziel eintragen
 
 **Einstellungen → Stream**:
 
 | Feld | Wert |
 |---|---|
 | Dienst | **Benutzerdefiniert...** |
-| Server | siehe Block unten |
+| Server | `srt://<REMOTE_IP>:9000?mode=caller&latency=400000&passphrase=<PASS>&pbkeylen=32` |
 | Streamschlüssel | **leer lassen** |
 
-```text
-srt://<REMOTE_IP>:9000?mode=caller&latency=400000&passphrase=<PASS>&pbkeylen=32
-```
-
-## B5. Starten
-
-**„Stream starten"**. Bild erscheint remote nach 1–2 s.
-
----
-
-# TEIL C — Prüfen
-
-## C1. Statistiken öffnen
-
-Auf **beiden** Rechnern: **Ansicht → Docks → Statistiken**.
-
-Sollwerte lokal:
-
-```text
-Verworfene Frames (Netzwerk)  = 0
-Überlastete Enkodierung       = nein
-Bitrate                       = stabil auf Sollwert
-```
-
-## C2. Logfile bei Problemen
-
-**Hilfe → Logdateien → Aktuelles Log anzeigen**.
-Falsche Passphrase erscheint nur hier als Connection-Reject, nicht im UI.
-
-## C3. Fehlerbilder
-
-| Symptom | Ursache | Maßnahme |
-|---|---|---|
-| Remote bleibt schwarz | Port/NAT/Firewall | A1–A2 prüfen, Teil E |
-| Verbindung bricht sofort ab | Passphrase ungleich | beide URLs vergleichen |
-| Ruckler, verworfene Frames | Bitrate zu hoch | Bitrate −20 % |
-| Artefakte, kurze Aussetzer | Latenz zu klein | `latency` erhöhen, Teil D |
-| Ton läuft vor/nach | Buffer-Versatz | D2 |
-
----
-
-# TEIL D — Tuning
-
-## D1. Latenz berechnen
-
-RTT messen (lokal):
-
-```powershell
-ping <REMOTE_IP>
-```
-
-Regel: `latency [µs] ≥ 4 × RTT [ms] × 1000`, Minimum 120000.
-
-```text
-RTT  25 ms  ->  latency=120000   (Minimum greift)
-RTT  60 ms  ->  latency=240000
-RTT 100 ms  ->  latency=400000
-```
-
-Wert in **beiden** URLs setzen; SRT verwendet den höheren der beiden.
-
-## D2. A/V-Sync
-
-Remote: Rechtsklick Mixer → **Erweiterte Audioeigenschaften** → `SRT-In` → **Sync-Versatz** in ms anpassen.
+**„Stream starten"**
 
 </details>
 
