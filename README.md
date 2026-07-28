@@ -54,7 +54,7 @@ OBS → **Einstellungen → Ausgabe** → Ausgabemodus **Erweitert** → Tab **S
 | Profil | high |
 | B-Frames | 2 |
 
-**Einstellungen → Ausgabe → Tab Audio
+**Einstellungen → Ausgabe → **Tab Audio**:
 
 | Feld | Wert |
 |---|---|
