@@ -1,38 +1,21 @@
-# OBS → OBS über Internet (SRT, verschlüsselt)
-
-Lokaler Win11-PC sendet Bild+Ton an die entfernte Win11-Streaming-Maschine.
-Transport: SRT über UDP, AES-256, ~400 ms Latenz.
-
-## 0. Platzhalter festlegen
-
-Einmal ausfüllen, überall gleich verwenden.
-
-```text
-<PASS>        = Passphrase, 10-79 Zeichen, auf beiden Seiten identisch
-<REMOTE_IP>   = öffentliche IP der Streaming-Maschine
-<LOCAL_IP>    = öffentliche IP des lokalen PCs (nur für die Firewall-Regel)
-<PORT>        = 9000
-```
-
-Passphrase erzeugen (lokal, PowerShell):
+<details>
+<summary>Allgemein</summary>
 
 ```powershell
 [Convert]::ToBase64String((1..24 | % {Get-Random -Max 256}))
 ```
+save as`<PASS>`
 
----
+</details>
 
-# TEIL A — Remote (Empfänger). Zuerst einrichten.
+<details>
+<summary>Server</summary>
 
-## A1. Firewall öffnen, auf Quell-IP begrenzt
-
-PowerShell **als Administrator** auf der Streaming-Maschine:
+PowerShell **als Administrator**:
 
 ```powershell
-New-NetFirewallRule -DisplayName "SRT-In" -Direction Inbound -Protocol UDP -LocalPort 9000 -RemoteAddress <LOCAL_IP> -Action Allow
+New-NetFirewallRule -DisplayName "SRT-In" -Direction Inbound -Protocol UDP -LocalPort 9000 -RemoteAddress <ip-local> -Action Allow
 ```
-
-*Warum:* ohne `-RemoteAddress` ist der Port für das gesamte Internet offen.
 
 Prüfen:
 
@@ -40,52 +23,29 @@ Prüfen:
 Get-NetFirewallRule -DisplayName "SRT-In" | Get-NetFirewallAddressFilter
 ```
 
-## A2. Router/Cloud-Firewall
-
-Falls die Maschine hinter NAT steht: UDP `9000` an ihre interne IP weiterleiten.
-Bei VPS zusätzlich in der Cloud-Firewall (Security Group) UDP 9000 freigeben.
-
-## A3. Medienquelle anlegen
-
 OBS → **Quellen** → **+** → **Medienquelle** → Name `SRT-In` → OK.
-
-## A4. Medienquelle konfigurieren
 
 Einstellungen im Dialog:
 
 | Feld | Wert |
 |---|---|
 | Lokale Datei | **Haken entfernen** |
-| Eingabe | siehe Block unten |
+| Eingabe | <`srt://0.0.0.0:9000?mode=listener&latency=400000&passphrase=<PASS>&pbkeylen=32`> |
 | Eingabeformat | `mpegts` |
 | Netzwerkpuffer | Minimum (1 MB) |
 | Wiedergabe neu starten, wenn Quelle aktiv wird | **aus** |
 | Datei schließen, wenn inaktiv | **aus** |
 | Bei Wiedergabeende Quelle abschalten | **aus** |
 
-Eingabe-URL (Passphrase einsetzen):
+</details>
 
-```text
-srt://0.0.0.0:9000?mode=listener&latency=400000&passphrase=<PASS>&pbkeylen=32
-```
+<details>
+<summary>Local</summary>
 
-*Erklärung:* `0.0.0.0` = auf allen Interfaces lauschen. `latency` in Mikrosekunden. `pbkeylen=32` = AES-256.
+Upload messen (z. B. speedtest).
 
-## A5. Quelle scharf lassen
-
-Rechtsklick auf `SRT-In` → **„Deaktivieren, wenn nicht sichtbar"** darf **nicht** gesetzt sein.
-Schwarzes Bild bis der Sender verbindet ist korrekt.
-
+Bitrate = **70 %** davon.
 ---
-
-# TEIL B — Lokal (Sender)
-
-## B1. Upload messen
-
-Vor allem anderen: realen Upload messen (z. B. speedtest). Bitrate = **70 %** davon.
-
-## B2. Encoder
-
 OBS → **Einstellungen → Ausgabe** → Ausgabemodus **Erweitert** → Tab **Streaming**:
 
 | Feld | Wert |
@@ -180,12 +140,12 @@ Wert in **beiden** URLs setzen; SRT verwendet den höheren der beiden.
 
 Remote: Rechtsklick Mixer → **Erweiterte Audioeigenschaften** → `SRT-In` → **Sync-Versatz** in ms anpassen.
 
----
+</details>
 
-# TEIL E — Wenn kein Port freigegeben werden kann
+<details>
+<summary>Rollentausch</summary>
 
-## E1. Rollentausch
-
+Wenn kein Port freigegeben werden kann
 Remote hinter NAT, lokal erreichbar: Modi vertauschen.
 
 Lokal (Stream-Server):
@@ -197,32 +157,4 @@ Remote (Medienquelle):
 srt://<LOCAL_IP>:9000?mode=caller&latency=400000&passphrase=<PASS>&pbkeylen=32
 ```
 
-## E2. Beide hinter NAT
-
-Auf beiden Seiten `mode=rendezvous`, gleicher Port, beide gleichzeitig starten.
-
-## E3. Empfohlen: Tunnel statt offener Port
-
-WireGuard oder Tailscale auf beiden Maschinen installieren, dann in den URLs die
-Tunnel-IP statt der öffentlichen IP verwenden:
-
-```text
-srt://100.x.y.z:9000?mode=caller&latency=400000&passphrase=<PASS>&pbkeylen=32
-```
-
-Damit ist UDP 9000 nirgends öffentlich erreichbar; die Firewall-Regel aus A1 entfällt.
-Passphrase trotzdem gesetzt lassen (Defense in Depth).
-
----
-
-# Checkliste
-
-```text
-[ ] Passphrase erzeugt, identisch auf beiden Seiten
-[ ] Firewall-Regel mit -RemoteAddress gesetzt (oder Tunnel aktiv)
-[ ] Remote: Medienquelle, mode=listener, mpegts, Puffer minimal
-[ ] Lokal:  Stream-Ziel, mode=caller, Streamschlüssel leer
-[ ] Lokal:  CBR, Keyframe 1 s, Bitrate = 70 % Upload
-[ ] latency auf beiden Seiten gleich und >= 4x RTT
-[ ] Statistiken: verworfene Frames = 0
-```
+</details>
